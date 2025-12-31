@@ -11,8 +11,8 @@
     "start": "node dist/http.js"
   },
   "dependencies": {
-    "xmcp": "^0.1.4",
-    "zod": "3.24.4"
+    "xmcp": "^0.5.6",
+    "zod": "4"
   },
   "devDependencies": {
     "swc-loader": "^0.2.6"

@@ -19,61 +19,54 @@ export const schema = {
 };
 
 export const metadata = {
-    name: "people",
-    description: "Search for people",
+    name: "reddit",
+    description: "Search Reddit for posts and discussions",
     annotations: {
-        title: "Search for people",
+        title: "Search Reddit",
         readOnlyHint: true,
         destructiveHint: false,
-        idempotentHint: true,   
+        idempotentHint: true,
     },
 };
 
-export default async function peopleSearch({ query }: InferSchema<typeof schema>) {
+export default async function reddit({ query }: InferSchema<typeof schema>) {
     const headerlist = headers();
     const apiKey = getApiKey(headerlist);
     if (!apiKey) {
         return {
             content: [
-                { type: "text", text: "Missing API key. Provide request header `x-api-key` (recommended) or `Authorization: Bearer <key>`." }
+                {
+                    type: "text",
+                    text: "Missing API key. Provide request header `x-api-key` (recommended) or `Authorization: Bearer <key>`.",
+                },
             ],
         };
     }
 
-    const response = await fetch(`https://api.scira.ai/api/people`, {
+    const response = await fetch(`https://api.scira.ai/api/reddit`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "x-api-key": apiKey as string,
+            "x-api-key": apiKey,
         },
-        body: JSON.stringify({
-            query: query
-        })
-    })
+        body: JSON.stringify({ query }),
+    });
 
     if (!response.ok) {
         return {
-            content: [
-                { type: "text", text: "Error: " + response.statusText }
-            ],
+            content: [{ type: "text", text: `Error: ${response.status} ${response.statusText}` }],
         };
     }
 
     const data = await response.json();
 
-    if (data.error) {
-        return {
-            content: [
-                { type: "text", text: "Error: " + data.error }
-            ],
-        };
-    }
-
-    const profile = data.profile.name + "\n" + data.profile.x + "\n" + data.profile.linkedin + "\n" + data.profile.github + "\n" + data.profile.website + "\n" + data.profile.bio
-
     return {
         content: [
-            { type: "text", text: profile }
+            {
+                type: "text",
+                text: `${data.text}\n\nSources:\n${Array.isArray(data.sources) ? data.sources.join("\n") : ""}`,
+            },
         ],
     };
 }
+

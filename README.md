@@ -22,6 +22,22 @@ This MCP server provides the following tools:
 - **Parameters**: Query string and optional username filter
 - **Returns**: X posts and content with sources
 
+### 👽 Reddit Search (`reddit`)
+- **Description**: Search Reddit for posts and discussions
+- **Use Case**: Find relevant Reddit threads, advice, and community discussions
+- **Returns**: AI-powered summary with sources
+
+Example:
+
+```bash
+curl -X POST https://api.scira.ai/api/reddit \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "query": "Best practices for deploying Next.js on Vercel?"
+  }'
+```
+
 ## Prerequisites
 
 - Node.js 20.0.0 or higher

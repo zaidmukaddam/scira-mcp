@@ -2,6 +2,18 @@ import { z } from "zod";
 import { type InferSchema } from "xmcp";
 import { headers } from "xmcp/headers";
 
+function getApiKey(headerlist: Record<string, unknown>) {
+    const xApiKey = headerlist["x-api-key"];
+    if (typeof xApiKey === "string" && xApiKey.trim()) return xApiKey.trim();
+
+    const authorization = headerlist["Authorization"];
+    if (typeof authorization === "string" && authorization.trim()) {
+        return authorization.trim().replace(/^Bearer\s+/i, "");
+    }
+
+    return null;
+}
+
 export const schema = {
     query: z.string().describe("The query to search for"),
 };
@@ -19,13 +31,14 @@ export const metadata = {
 
 export default async function search({ query }: InferSchema<typeof schema>) {
     const headerlist = headers();
-    console.log(headerlist)
-    console.log(headerlist["x-api-key"])
-    console.log(headerlist["Authorization"])
-    const apiKey = headerlist["x-api-key"] || (headerlist["Authorization"] as string).replace("Bearer ", "") as string;
-    console.log(apiKey)
- 
-
+    const apiKey = getApiKey(headerlist);
+    if (!apiKey) {
+        return {
+            content: [
+                { type: "text", text: "Missing API key. Provide request header `x-api-key` (recommended) or `Authorization: Bearer <key>`." }
+            ],
+        };
+    }
 
     const response = await fetch(`https://api.scira.ai/api/search`, {
         method: "POST", 
@@ -40,13 +53,19 @@ export default async function search({ query }: InferSchema<typeof schema>) {
         })
     })
 
-    const data = await response.json();
+    if (!response.ok) {
+        return {
+            content: [
+                { type: "text", text: `Error: ${response.status} ${response.statusText}` }
+            ],
+        };
+    }
 
-    console.log(data)
+    const data = await response.json();
 
     return {
         content: [
-            { type: "text", text: data.text + "\n\nSources:\n" + data.sources.map((source: string) => source) }
+            { type: "text", text: `${data.text}\n\nSources:\n${Array.isArray(data.sources) ? data.sources.join("\n") : ""}` }
         ],
     };
 }

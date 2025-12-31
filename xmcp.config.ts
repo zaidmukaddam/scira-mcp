@@ -7,11 +7,16 @@ const config: XmcpConfig = {
     cors: {
       origin: "*",
       methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type"],
-      exposedHeaders: ["Content-Type"],
+      allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
+      exposedHeaders: ["Content-Type", "Authorization", "x-api-key"],
       maxAge: 600,
     },
   },
+  paths: {
+    prompts: false,
+    tools: true,
+    resources: false,
+  }
 };
 
 export default config;
